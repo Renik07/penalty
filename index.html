@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Угадайте исход пяти пенальти и проверьте футбольную интуицию.">
+    <title>Пенальти — угадай исход удара</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <main id="start-screen" class="start-shell">
+      <div class="stadium-glow" aria-hidden="true"></div>
+      <section class="start-card" aria-labelledby="game-title">
+        <p class="eyebrow">LEON</p>
+        <!-- <div class="ball-mark" aria-hidden="true">●</div> -->
+        <h1 id="game-title">ПЕНАЛЬТИ</h1>
+        <p class="lead">Угадай и получи приз</p>
+        <button id="start-button" class="primary-button" type="button">Начать игру</button>
+        <!-- <p class="controls-note">Контроллер: кнопка 1 — гол · кнопка 2 — мимо</p> -->
+      </section>
+    </main>
+
+    <main id="game-screen" class="game-shell hidden">
+      <header class="game-header">
+        <div class="mini-brand">LEON</div>
+        <div class="round-counter"><strong id="round-number">1</strong><span>/ 5</span></div>
+        <div class="live-score">Угадано <strong id="live-score">0</strong></div>
+      </header>
+
+      <section class="video-stage">
+        <video id="game-video" class="game-video" playsinline preload="auto"></video>
+        <div class="video-vignette" aria-hidden="true"></div>
+
+        <div id="loading-overlay" class="status-overlay hidden">
+          <span class="loader"></span><p>Готовим удар</p>
+        </div>
+
+        <div id="playback-overlay" class="status-overlay hidden">
+          <button id="play-video-button" class="primary-button" type="button">Запустить видео</button>
+        </div>
+
+        <div id="prediction-overlay" class="prediction-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="prediction-title">
+          <p class="round-kicker">Решай сейчас</p>
+          <h2 id="prediction-title">ЗАБЬЕТ ИЛИ НЕ ЗАБЬЕТ?</h2>
+          <div class="prediction-actions">
+            <button id="goal-button" type="button"><kbd>1</kbd><span><small>Я думаю</small>Забьет</span></button>
+            <button id="miss-button" type="button"><kbd>2</kbd><span><small>Я думаю</small>Не забьет</span></button>
+          </div>
+          <!-- <p class="controller-status">Работают клавиши 1/2, ←/→ и первые две кнопки геймпада</p> -->
+        </div>
+
+        <div id="round-result-overlay" class="result-overlay hidden" role="status">
+          <p id="actual-result" class="round-kicker"></p>
+          <h2 id="round-result-title"></h2>
+          <p id="round-result-copy"></p>
+          <button id="continue-button" class="primary-button" type="button">Следующий удар</button>
+        </div>
+      </section>
+
+      <footer id="progress-row" class="progress-row" aria-label="Прогресс игры"></footer>
+    </main>
+
+    <main id="final-screen" class="final-shell hidden">
+      <section class="final-card">
+        <p class="eyebrow">Серия завершена</p>
+        <div class="final-score"><strong id="final-score">0</strong><span>/ 5</span></div>
+        <h1 id="final-title" class="final-title">Серия завершена</h1>
+        <div id="result-dots" class="result-dots"></div>
+        <p id="final-copy" class="lead"></p>
+        <button id="restart-button" class="primary-button" type="button">Сыграть ещё раз</button>
+        <button id="home-button" class="setup-button" type="button">На главный экран</button>
+      </section>
+    </main>
+
+  </body>
+</html>
