@@ -365,11 +365,16 @@ h1 {
   color: var(--red);
 }
 .result-overlay > p:not(.round-kicker) {
-  margin: 0 0 28px;
+  margin: 0 0 16px;
   color: var(--muted);
 }
-.result-overlay .primary-button {
-  min-width: 240px;
+.result-overlay .result-countdown {
+  margin-top: 8px;
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 .progress-row {
   display: flex;

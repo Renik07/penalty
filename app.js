@@ -26,7 +26,6 @@ const elements = {
   playVideoButton: document.querySelector('#play-video-button'),
   goalButton: document.querySelector('#goal-button'),
   missButton: document.querySelector('#miss-button'),
-  continueButton: document.querySelector('#continue-button'),
   restartButton: document.querySelector('#restart-button'),
   homeButton: document.querySelector('#home-button'),
   roundNumber: document.querySelector('#round-number'),
@@ -35,6 +34,7 @@ const elements = {
   actualResult: document.querySelector('#actual-result'),
   roundResultTitle: document.querySelector('#round-result-title'),
   roundResultCopy: document.querySelector('#round-result-copy'),
+  resultCountdown: document.querySelector('#result-countdown'),
   finalScore: document.querySelector('#final-score'),
   finalTitle: document.querySelector('#final-title'),
   finalCopy: document.querySelector('#final-copy'),
@@ -50,6 +50,8 @@ const state = {
   pausedAtDecision: false,
   frameHandle: null,
   timerHandle: null,
+  resultTimeout: null,
+  countdownInterval: null,
   gamepadButtons: [],
 };
 
@@ -85,6 +87,13 @@ function clearFrameWatcher() {
   if (state.timerHandle !== null) window.clearInterval(state.timerHandle);
   state.frameHandle = null;
   state.timerHandle = null;
+}
+
+function clearResultTimer() {
+  if (state.resultTimeout !== null) window.clearTimeout(state.resultTimeout);
+  if (state.countdownInterval !== null) window.clearInterval(state.countdownInterval);
+  state.resultTimeout = null;
+  state.countdownInterval = null;
 }
 
 function reachDecisionPoint() {
@@ -143,6 +152,7 @@ function renderProgress() {
 
 function loadRound() {
   clearFrameWatcher();
+  clearResultTimer();
   state.phase = 'loading';
   state.selectedAnswer = null;
   state.pausedAtDecision = false;
@@ -185,13 +195,31 @@ function finishRound() {
   elements.roundResultCopy.textContent = correct ? 'Точное чтение момента.' : `Твой выбор — ${label(answer.prediction).toLowerCase()}.`;
   elements.resultOverlay.classList.toggle('is-correct', correct);
   elements.resultOverlay.classList.toggle('is-wrong', !correct);
-  elements.continueButton.textContent = state.roundIndex === state.rounds.length - 1 ? 'Посмотреть итог' : 'Следующий удар';
   elements.liveScore.textContent = String(correctCount());
   renderProgress();
   show(elements.resultOverlay, true);
+  scheduleAutoContinue();
+}
+
+function scheduleAutoContinue() {
+  clearResultTimer();
+  let secondsLeft = 5;
+  const isLastRound = state.roundIndex === state.rounds.length - 1;
+  const renderCountdown = () => {
+    const destination = isLastRound ? 'Итоги' : 'Следующий удар';
+    elements.resultCountdown.textContent = `${destination} через ${secondsLeft} сек.`;
+  };
+
+  renderCountdown();
+  state.countdownInterval = window.setInterval(() => {
+    secondsLeft -= 1;
+    if (secondsLeft > 0) renderCountdown();
+  }, 1000);
+  state.resultTimeout = window.setTimeout(continueGame, 5000);
 }
 
 function showFinal() {
+  clearResultTimer();
   const score = correctCount();
   elements.finalScore.textContent = String(score);
   elements.finalTitle.textContent = score === 5 ? 'Идеальная серия' : score >= 3 ? 'Отличная футбольная интуиция' : 'Реванш уже рядом';
@@ -207,6 +235,7 @@ function showFinal() {
 }
 
 function continueGame() {
+  clearResultTimer();
   if (state.roundIndex === state.rounds.length - 1) {
     showFinal();
     return;
@@ -221,7 +250,6 @@ elements.homeButton.addEventListener('click', () => showScreen(elements.start));
 elements.goalButton.addEventListener('click', () => choosePrediction('goal'));
 elements.missButton.addEventListener('click', () => choosePrediction('miss'));
 elements.playVideoButton.addEventListener('click', playGameVideo);
-elements.continueButton.addEventListener('click', continueGame);
 
 elements.gameVideo.addEventListener('loadedmetadata', () => {
   if (state.phase !== 'loading') return;
