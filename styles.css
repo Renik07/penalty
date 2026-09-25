@@ -105,7 +105,7 @@ button:focus-visible {
   background: rgba(8, 25, 15, 0.72);
   box-shadow: 0 30px 100px rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(18px); */
-  margin-top: 66vh;
+  margin-top: 55vh;
   transform: scale(2);
   margin-left: -6vw;
 }
@@ -370,6 +370,7 @@ h1 {
 }
 .prediction-video {
   object-fit: fill;
+  transform: scale(1.15);
 }
 .overlay-video {
   object-fit: cover;
@@ -541,11 +542,14 @@ h1 {
   font-size: 30px;
 }
 .final-title {
+  color: #000000;
+  font-family: Roboto, sans-serif;
   max-width: 720px;
   margin: 0 auto 2vh;
-  font-size: clamp(16px, 1.5vw, 28px);
+  font-size: clamp(16px, 1.5vw, 30px);
   line-height: 1.12;
   letter-spacing: -0.025em;
+  white-space: pre-line;
 }
 .result-dots {
   display: flex;

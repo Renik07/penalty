@@ -111,12 +111,20 @@ const RESULT_VIDEO_SOURCES = {
   wrong: 'source/bg-video-miss.webm',
 };
 const FINAL_MESSAGES = [
-  '«Даже спящий лев — всё равно лев. Просыпайся!»',
-  '«Один угаданный момент? Льву хватает и одного, чтобы о нём заговорили»',
-  '«Читаешь игру, как роман. Но пока только первую главу»',
-  '«А лев тут ты. Интуиция дело наживное»',
-  '«Угадал львиную долю моментов. До короны — один шаг!»',
-  '«Высшая форма хищника. Такую чуйку природа выдаёт раз в поколение»',
+  '«Даже спящий лев —\nвсё равно лев. Просыпайся!»',
+  '«Один угаданный момент? Льву хватает\nи одного, чтобы о нём заговорили»',
+  '«Читаешь игру, как роман.\nНо пока только первую главу»',
+  '«А лев тут ты.\nИнтуиция дело наживное»',
+  '«Угадал львиную долю моментов.\nДо короны — один шаг!»',
+  '«Высшая форма хищника. Такую чуйку\nприрода выдаёт раз в поколение»',
+];
+const FINAL_VIDEO_SOURCES = [
+  'source/video-0-5.webm',
+  'source/video-1-5.webm',
+  'source/video-2-5.webm',
+  'source/video-3-5.webm',
+  'source/video-4-5.webm',
+  'source/video-5-5.webm',
 ];
 
 const elements = {
@@ -434,7 +442,7 @@ function finishRound() {
 
 function scheduleAutoContinue() {
   clearResultTimer();
-  state.resultTimeout = window.setTimeout(continueGame, 6500);
+  state.resultTimeout = window.setTimeout(continueGame, 6700);
 }
 
 function showFinal() {
@@ -450,6 +458,11 @@ function showFinal() {
     elements.resultDots.append(dot);
   });
   state.phase = 'final';
+  const finalVideoSource = FINAL_VIDEO_SOURCES[score];
+  if (elements.finalBackgroundVideo.getAttribute('src') !== finalVideoSource) {
+    elements.finalBackgroundVideo.src = finalVideoSource;
+    elements.finalBackgroundVideo.load();
+  }
   showScreen(elements.final);
   elements.finalBackgroundVideo.currentTime = 0;
   void elements.finalBackgroundVideo.play().catch(() => {});
