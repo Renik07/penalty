@@ -5,3 +5,4 @@
 
 # Local penalty videos
 /video/*.mp4
+/video/*.webm
