@@ -10,6 +10,7 @@
   </head>
   <body>
     <main id="start-screen" class="start-shell">
+      <video class="start-background-video" src="source/bg-start-video.webm" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
       <div class="stadium-glow" aria-hidden="true"></div>
       <section class="start-card" aria-labelledby="game-title">
         <!-- <img class="logo eyebrow" src="images/logo.svg" alt="Leon"> -->
@@ -33,7 +34,6 @@
       <section class="video-stage">
         <video id="game-video" class="game-video" muted playsinline preload="auto"></video>
         <div class="video-vignette" aria-hidden="true"></div>
-        <p id="video-name" class="video-name hidden"></p>
 
         <div id="loading-overlay" class="status-overlay hidden">
           <span class="loader"></span><p>Готовим удар</p>
@@ -58,9 +58,8 @@
         </div>
 
         <div id="round-result-overlay" class="result-overlay hidden" role="status">
-          <video id="result-video" class="overlay-video" src="source/test-opacity-video.webm" muted loop playsinline preload="auto" aria-hidden="true"></video>
+          <video id="result-video" class="overlay-video" muted loop playsinline preload="auto" aria-hidden="true"></video>
           <!-- <p id="actual-result" class="round-kicker"></p> -->
-          <h2 id="round-result-title"></h2>
           <!-- <p id="round-result-copy"></p> -->
           <!-- <p id="result-countdown" class="result-countdown"></p> -->
         </div>
@@ -70,10 +69,11 @@
     </main>
 
     <main id="final-screen" class="final-shell hidden">
+      <video id="final-background-video" class="final-background-video" src="source/bg-video-results.webm" muted loop playsinline preload="auto" aria-hidden="true"></video>
       <section class="final-card">
         <!-- <p class="eyebrow">Серия завершена</p> -->
         <!-- <div class="final-score"><strong id="final-score">0</strong><span>/ 5</span></div> -->
-        <!-- <h1 id="final-title" class="final-title">Серия завершена</h1> -->
+        <h1 id="final-title" class="final-title"></h1>
         <!-- <p id="final-copy" class="lead"></p> -->
         <div id="result-dots" class="result-dots"></div>
         <button id="home-button" class="setup-button image-button" type="button" aria-label="Начать заново">

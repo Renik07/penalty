@@ -31,7 +31,17 @@ button:focus-visible {
 }
 
 .start-shell {
-  background: url(./images/bg-start.jpg) center/cover no-repeat;
+  background: var(--deep);
+}
+.start-background-video,
+.final-background-video {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
 }
 
 .start-shell,
@@ -279,7 +289,7 @@ h1 {
   position: relative;
   /* width: min(93vw, 163svh); */
   width: min(94vw, 167svh);
-  aspect-ratio: 1.94;
+  aspect-ratio: 1.85;
   display: grid;
   place-items: center;
   overflow: hidden;
@@ -300,21 +310,6 @@ h1 {
   inset: 0;
   pointer-events: none;
   box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.48);
-}
-.video-name {
-  position: absolute;
-  top: clamp(8px, 1vw, 38px);
-  right: clamp(10px, 1.2vw, 46px);
-  margin: 0;
-  padding: clamp(6px, 0.55vw, 21px) clamp(9px, 0.8vw, 31px);
-  border: clamp(1px, 0.08vw, 3px) solid rgba(255, 255, 255, 0.18);
-  border-radius: clamp(6px, 0.4vw, 15px);
-  background: rgba(0, 0, 0, 0.62);
-  color: #fff;
-  font-size: clamp(12px, 1.2vw, 48px);
-  font-weight: 700;
-  line-height: 1;
-  pointer-events: none;
 }
 .status-overlay {
   position: absolute;
@@ -354,7 +349,7 @@ h1 {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  /* padding: 24px; */
   text-align: center;
   background: rgba(3, 12, 7, 0.7);
   backdrop-filter: blur(12px);
@@ -371,8 +366,15 @@ h1 {
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: fill;
   pointer-events: none;
+}
+.prediction-video {
+  object-fit: fill;
+}
+.overlay-video {
+  object-fit: cover;
+  transform: scale(1.1);
+  transform-origin: center;
 }
 .prediction-overlay > :not(.prediction-video),
 .result-overlay > :not(.overlay-video) {
@@ -393,8 +395,7 @@ h1 {
   letter-spacing: 0.2em;
   text-transform: uppercase;
 }
-.prediction-overlay h2,
-.result-overlay h2 {
+.prediction-overlay h2 {
   margin: 0 0 30px;
   font-size: clamp(34px, 6vw, 72px);
   line-height: 0.95;
@@ -482,15 +483,6 @@ h1 {
 .result-overlay.is-wrong {
   background: rgba(25, 8, 6, 0.18);
 }
-.result-overlay h2 {
-  margin-bottom: 12px;
-  color: var(--lime);
-  font-size: clamp(48px, 9vw, 104px);
-  text-shadow: 0 3px 14px rgba(0, 0, 0, 0.75);
-}
-.result-overlay.is-wrong h2 {
-  color: var(--red);
-}
 .result-overlay > p:not(.round-kicker) {
   margin: 0 0 16px;
   color: var(--muted);
@@ -527,7 +519,7 @@ h1 {
 }
 
 .final-shell {
-  background: url(./images/bg-final.jpg) center/cover no-repeat;
+  background: var(--deep);
 }
 .final-card {
   width: min(720px, 100%);
@@ -549,10 +541,11 @@ h1 {
   font-size: 30px;
 }
 .final-title {
-  margin-top: 30px;
-  font-size: clamp(34px, 6vw, 62px);
-  line-height: 0.96;
-  letter-spacing: -0.05em;
+  max-width: 720px;
+  margin: 0 auto 2vh;
+  font-size: clamp(16px, 1.5vw, 28px);
+  line-height: 1.12;
+  letter-spacing: -0.025em;
 }
 .result-dots {
   display: flex;

@@ -106,6 +106,18 @@ const PENALTIES = [
 
 const GOAL_KEYS = new Set(['Digit1', 'Numpad1', 'ArrowLeft', 'KeyA']);
 const MISS_KEYS = new Set(['Digit2', 'Numpad2', 'ArrowRight', 'KeyB']);
+const RESULT_VIDEO_SOURCES = {
+  correct: 'source/bg-video-goal.webm',
+  wrong: 'source/bg-video-miss.webm',
+};
+const FINAL_MESSAGES = [
+  '«Даже спящий лев — всё равно лев. Просыпайся!»',
+  '«Один угаданный момент? Льву хватает и одного, чтобы о нём заговорили»',
+  '«Читаешь игру, как роман. Но пока только первую главу»',
+  '«А лев тут ты. Интуиция дело наживное»',
+  '«Угадал львиную долю моментов. До короны — один шаг!»',
+  '«Высшая форма хищника. Такую чуйку природа выдаёт раз в поколение»',
+];
 
 const elements = {
   screens: [...document.querySelectorAll('body > main')],
@@ -113,8 +125,8 @@ const elements = {
   game: document.querySelector('#game-screen'),
   final: document.querySelector('#final-screen'),
   startButton: document.querySelector('#start-button'),
+  finalBackgroundVideo: document.querySelector('#final-background-video'),
   gameVideo: document.querySelector('#game-video'),
-  videoName: document.querySelector('#video-name'),
   predictionVideo: document.querySelector('#prediction-video'),
   resultVideo: document.querySelector('#result-video'),
   loadingOverlay: document.querySelector('#loading-overlay'),
@@ -128,7 +140,6 @@ const elements = {
   roundNumber: document.querySelector('#round-number'),
   liveScore: document.querySelector('#live-score'),
   progress: document.querySelector('#progress-row'),
-  roundResultTitle: document.querySelector('#round-result-title'),
   finalScore: document.querySelector('#final-score'),
   finalTitle: document.querySelector('#final-title'),
   resultDots: document.querySelector('#result-dots'),
@@ -197,6 +208,16 @@ function correctCount() {
   return state.answers.filter((answer) => answer.correct).length;
 }
 
+function prepareResultVideo(correct) {
+  const source = correct ? RESULT_VIDEO_SOURCES.correct : RESULT_VIDEO_SOURCES.wrong;
+  if (elements.resultVideo.dataset.source === source) return;
+
+  elements.resultVideo.pause();
+  elements.resultVideo.dataset.source = source;
+  elements.resultVideo.src = source;
+  elements.resultVideo.load();
+}
+
 function clearFrameWatcher() {
   if (state.frameHandle !== null && 'cancelVideoFrameCallback' in elements.gameVideo) {
     elements.gameVideo.cancelVideoFrameCallback(state.frameHandle);
@@ -223,7 +244,6 @@ function reachDecisionPoint() {
   state.pausedAtDecision = true;
   state.phase = 'predicting';
   elements.gameVideo.pause();
-  show(elements.videoName, false);
   show(elements.predictionOverlay, true);
   elements.predictionVideo.currentTime = 0;
   void elements.predictionVideo.play().catch(() => {});
@@ -257,10 +277,8 @@ function watchDecisionPoint() {
 async function playGameVideo() {
   try {
     await elements.gameVideo.play();
-    show(elements.videoName, true);
     show(elements.playbackOverlay, false);
   } catch {
-    show(elements.videoName, false);
     show(elements.playbackOverlay, true);
   }
 }
@@ -278,6 +296,18 @@ function renderProgress() {
   });
 }
 
+function activateLoadedRound() {
+  if (state.phase !== 'loading') return;
+  const current = state.rounds[state.roundIndex];
+  current.decisionTime = Math.min(current.decisionTime, Math.max(0.5, elements.gameVideo.duration - 1.5));
+  elements.gameVideo.currentTime = 0;
+  state.phase = 'playing';
+  show(elements.loadingOverlay, false);
+  watchDecisionPoint();
+  void playGameVideo();
+  void preloadVideo(state.rounds[state.roundIndex + 1]);
+}
+
 async function loadRound() {
   clearFrameWatcher();
   clearResultTimer();
@@ -288,7 +318,6 @@ async function loadRound() {
   if (elements.roundNumber) elements.roundNumber.textContent = String(state.roundIndex + 1);
   if (elements.liveScore) elements.liveScore.textContent = String(correctCount());
   show(elements.loadingOverlay, true);
-  show(elements.videoName, false);
   show(elements.playbackOverlay, false);
   show(elements.predictionOverlay, false);
   elements.predictionVideo.pause();
@@ -298,19 +327,37 @@ async function loadRound() {
 
   const roundIndex = state.roundIndex;
   const current = state.rounds[roundIndex];
-  elements.videoName.textContent = current.src.replace(/^video\//, '');
+
+  if (elements.gameVideo.dataset.penaltyId === current.id) {
+    if (elements.gameVideo.readyState >= HTMLMediaElement.HAVE_METADATA) activateLoadedRound();
+    return;
+  }
+
   const source = await preloadVideo(current);
   if (roundIndex !== state.roundIndex || state.phase !== 'loading') return;
 
+  elements.gameVideo.dataset.penaltyId = current.id;
   elements.gameVideo.src = source;
   elements.gameVideo.load();
 }
 
-function beginGame() {
+function prepareGame() {
   clearVideoCache();
   state.rounds = shuffle(PENALTIES.map((penalty) => ({ ...penalty }))).slice(0, 5);
   state.roundIndex = 0;
   state.answers = [];
+  state.selectedAnswer = null;
+  state.pausedAtDecision = false;
+  state.phase = 'intro';
+
+  const firstRound = state.rounds[0];
+  elements.gameVideo.pause();
+  elements.gameVideo.dataset.penaltyId = firstRound.id;
+  elements.gameVideo.src = firstRound.src;
+  elements.gameVideo.load();
+}
+
+function beginGame() {
   showScreen(elements.game);
   loadRound();
 }
@@ -328,8 +375,9 @@ function startGameWithFeedback() {
 }
 
 function returnToStart() {
-  state.phase = 'intro';
+  elements.finalBackgroundVideo.pause();
   showScreen(elements.start);
+  prepareGame();
 }
 
 function returnToStartWithFeedback() {
@@ -348,6 +396,9 @@ function choosePrediction(prediction) {
   if (state.phase !== 'predicting') return;
   state.selectedAnswer = prediction;
   state.phase = 'selecting';
+
+  const current = state.rounds[state.roundIndex];
+  prepareResultVideo(prediction === current.result);
 
   const selectedButton = prediction === 'goal' ? elements.goalButton : elements.missButton;
   selectedButton.classList.add('is-selected');
@@ -370,8 +421,7 @@ function finishRound() {
   const answer = { id: current.id, prediction: state.selectedAnswer, result: current.result, correct };
   state.answers.push(answer);
   state.phase = 'roundResult';
-  show(elements.videoName, false);
-  elements.roundResultTitle.textContent = correct ? 'ТЫ УГАДАЛ!' : 'ТЫ НЕ УГАДАЛ';
+  prepareResultVideo(correct);
   elements.resultOverlay.classList.toggle('is-correct', correct);
   elements.resultOverlay.classList.toggle('is-wrong', !correct);
   if (elements.liveScore) elements.liveScore.textContent = String(correctCount());
@@ -384,7 +434,7 @@ function finishRound() {
 
 function scheduleAutoContinue() {
   clearResultTimer();
-  state.resultTimeout = window.setTimeout(continueGame, 5000);
+  state.resultTimeout = window.setTimeout(continueGame, 6500);
 }
 
 function showFinal() {
@@ -392,7 +442,7 @@ function showFinal() {
   elements.resultVideo.pause();
   const score = correctCount();
   if (elements.finalScore) elements.finalScore.textContent = String(score);
-  if (elements.finalTitle) elements.finalTitle.textContent = score === 5 ? 'Отлично' : score >= 3 ? 'Неплохо' : 'Плохо';
+  elements.finalTitle.textContent = FINAL_MESSAGES[score];
   elements.resultDots.replaceChildren();
   state.answers.forEach((answer) => {
     const dot = document.createElement('span');
@@ -401,6 +451,8 @@ function showFinal() {
   });
   state.phase = 'final';
   showScreen(elements.final);
+  elements.finalBackgroundVideo.currentTime = 0;
+  void elements.finalBackgroundVideo.play().catch(() => {});
 }
 
 function continueGame() {
@@ -419,17 +471,7 @@ elements.goalButton.addEventListener('click', () => choosePrediction('goal'));
 elements.missButton.addEventListener('click', () => choosePrediction('miss'));
 elements.playVideoButton.addEventListener('click', playGameVideo);
 
-elements.gameVideo.addEventListener('loadedmetadata', () => {
-  if (state.phase !== 'loading') return;
-  const current = state.rounds[state.roundIndex];
-  current.decisionTime = Math.min(current.decisionTime, Math.max(0.5, elements.gameVideo.duration - 1.5));
-  elements.gameVideo.currentTime = 0;
-  state.phase = 'playing';
-  show(elements.loadingOverlay, false);
-  watchDecisionPoint();
-  void playGameVideo();
-  void preloadVideo(state.rounds[state.roundIndex + 1]);
-});
+elements.gameVideo.addEventListener('loadedmetadata', activateLoadedRound);
 
 elements.gameVideo.addEventListener('ended', finishRound);
 
@@ -473,4 +515,5 @@ function pollGamepad() {
   requestAnimationFrame(pollGamepad);
 }
 
+prepareGame();
 requestAnimationFrame(pollGamepad);
