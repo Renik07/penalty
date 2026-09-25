@@ -3,7 +3,7 @@
 // decisionTime — секунда остановки перед ударом; result — 'goal' или 'miss'.
 const PENALTIES = [
   { id: 'goal-1', src: 'video/goal1 - 1.40.webm', decisionTime: 1.40, result: 'goal' },
-  { id: 'goal-2', src: 'video/goal2 - 1.88.webm', decisionTime: 1.88, result: 'goal' },
+  { id: 'goal-2', src: 'video/goal2 - 3.58.webm', decisionTime: 3.58, result: 'goal' },
   { id: 'goal-3', src: 'video/goal3 - 2.56.webm', decisionTime: 2.56, result: 'goal' },
   { id: 'goal-4', src: 'video/goal4 - 1.68.webm', decisionTime: 1.68, result: 'goal' },
   { id: 'goal-5', src: 'video/goal5 - 1.77.webm', decisionTime: 1.77, result: 'goal' },
@@ -107,8 +107,14 @@ const PENALTIES = [
 const GOAL_KEYS = new Set(['Digit1', 'Numpad1', 'ArrowLeft', 'KeyA']);
 const MISS_KEYS = new Set(['Digit2', 'Numpad2', 'ArrowRight', 'KeyB']);
 const RESULT_VIDEO_SOURCES = {
-  correct: 'source/bg-video-goal.webm',
-  wrong: 'source/bg-video-miss.webm',
+  regular: {
+    correct: 'source/bg-video-goal.webm',
+    wrong: 'source/bg-video-miss.webm',
+  },
+  final: {
+    correct: 'source/bg-video-goal-final.webm',
+    wrong: 'source/bg-video-miss-final.webm',
+  },
 };
 const FINAL_MESSAGES = [
   '«Даже спящий лев —\nвсё равно лев. Просыпайся!»',
@@ -217,7 +223,9 @@ function correctCount() {
 }
 
 function prepareResultVideo(correct) {
-  const source = correct ? RESULT_VIDEO_SOURCES.correct : RESULT_VIDEO_SOURCES.wrong;
+  const isFinalRound = state.roundIndex === state.rounds.length - 1;
+  const sources = isFinalRound ? RESULT_VIDEO_SOURCES.final : RESULT_VIDEO_SOURCES.regular;
+  const source = correct ? sources.correct : sources.wrong;
   if (elements.resultVideo.dataset.source === source) return;
 
   elements.resultVideo.pause();
